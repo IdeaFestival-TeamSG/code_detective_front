@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { getCookie } from "@/utils";
+import { getCookie } from '@/utils';
 
 type RefreshResponse = {
   accessToken: string;
@@ -10,12 +10,12 @@ type RefreshResponse = {
 };
 
 export const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: '/api',
   withCredentials: true,
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  const accessToken = getCookie("accessToken");
+axiosInstance.interceptors.request.use(config => {
+  const accessToken = getCookie('accessToken');
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -26,7 +26,7 @@ let isRefreshing = false;
 let refreshSubscribers: ((token: string) => void)[] = [];
 
 const onTokenRefreshed = (token: string) => {
-  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers.forEach(callback => callback(token));
   refreshSubscribers = [];
 };
 
@@ -35,24 +35,24 @@ const addRefreshSubscriber = (callback: (token: string) => void) => {
 };
 
 axiosInstance.interceptors.response.use(
-  (response) => {
+  response => {
     return response.data;
   },
-  async (error) => {
+  async error => {
     const originalRequest = error.config;
     console.log(error);
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = getCookie("refreshToken");
+      const refreshToken = getCookie('refreshToken');
 
       if (!refreshToken) {
         return Promise.reject(error);
       }
 
       if (isRefreshing) {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           addRefreshSubscriber((token: string) => {
             originalRequest.headers.Authorization = `Bearer ${token}`;
             resolve(axiosInstance(originalRequest));
@@ -64,7 +64,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const response: RefreshResponse = await axiosInstance.post(
-          "/auth/refresh",
+          '/auth/refresh',
           {
             refreshToken,
           }
