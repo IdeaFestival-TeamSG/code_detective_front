@@ -64,7 +64,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         const response: RefreshResponse = await axiosInstance.post(
-          '/auth/refresh',
+          '', // refresh 주소
           {
             refreshToken,
           }
